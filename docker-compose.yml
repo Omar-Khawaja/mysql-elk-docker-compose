@@ -1,0 +1,53 @@
+version: '3'
+services:
+
+  mysql:
+    container_name: mysql
+    hostname: mysql
+    image: 'mysql-elk-sync'
+    restart: always
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: 'password'
+    build: ./mysql
+    networks:
+      - sql-elk-network
+
+  elasticsearch:
+    container_name: elasticsearch
+    hostname: elasticsearch
+    image: 'elasticsearch:6.6.1'
+    restart: always
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+    networks:
+      - sql-elk-network
+
+  logstash:
+    container_name: logstash
+    hostname: logstash
+    image: 'logstash-mysql-sync'
+    restart: always
+    build: ./logstash
+    networks:
+      - sql-elk-network
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    container_name: kibana
+    hostname: kibana
+    image: 'kibana:6.6.1'
+    restart: always
+    ports:
+      - '5601:5601'
+    networks:
+      - sql-elk-network
+    depends_on:
+      - elasticsearch
+
+networks:
+  sql-elk-network:
+    driver: bridge
